@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Professional Contact Forms
  * Plugin URI:  https://github.com/Byot3711/-Forms
- * Description: Plugin profesional pentru formulare de contact în WordPress — validare securizată prin nonce, stocare a trimiterilor în baza de date, notificări automate pe email și panou de administrare dedicat pentru gestionarea mesajelor primite.
+ * Description: A clean, professional WordPress contact form plugin with database storage, email notifications, and an admin dashboard.
  * Version:     1.0.0
  * Author:      Byot
  * Author URI:  https://github.com/Byot3711
@@ -10,7 +10,7 @@
  * Text Domain: professional-forms
  */
 
-// Dacă acest fișier este apelat direct, ieși.
+// If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
     die;
 }
@@ -18,7 +18,7 @@ if ( ! defined( 'WPINC' ) ) {
 define( 'PROFESSIONAL_FORMS_VERSION', '1.0.0' );
 
 /**
- * Clasa principală a plugin-ului.
+ * Main plugin class.
  */
 class Professional_Forms {
 
@@ -41,7 +41,7 @@ class Professional_Forms {
     }
 
     /**
-     * Activare plugin: creează tabela și opțiunea implicită.
+     * Plugin activation: creates the database table and default option.
      */
     public function activate() {
         global $wpdb;
@@ -61,14 +61,14 @@ class Professional_Forms {
         require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
         dbDelta( $sql );
 
-        // Setează email-ul destinatarului ca email-ul adminului, dacă nu există deja.
+        // Default the recipient email to the site admin email, if not already set.
         if ( ! get_option( 'professional_forms_email' ) ) {
             update_option( 'professional_forms_email', get_option( 'admin_email' ) );
         }
     }
 
     /**
-     * Dezinstalare: șterge tabela și opțiunea.
+     * Plugin uninstallation: drops the table and removes the option.
      */
     public static function uninstall() {
         global $wpdb;
@@ -78,10 +78,10 @@ class Professional_Forms {
     }
 
     /**
-     * Înregistrează stilurile front-end.
+     * Registers front-end styles.
      */
     public function enqueue_scripts() {
-        // CSS inline pentru a păstra plugin-ul într-un singur fișier.
+        // Inline CSS to keep the plugin self-contained in a single file.
         $custom_css = "
             .professional-form-wrapper {
                 max-width: 600px;
@@ -152,22 +152,22 @@ class Professional_Forms {
     }
 
     /**
-     * Shortcode [professional_form] – afișează formularul.
+     * Shortcode [professional_form] – renders the contact form.
      */
     public function form_shortcode() {
         ob_start();
         ?>
         <div class="professional-form-wrapper">
             <?php
-            // Afișează mesajele de succes/eroare stocate în sesiune.
+            // Show success/error messages after submission.
             if ( isset( $_GET['pf_status'] ) ) {
                 $status = sanitize_text_field( $_GET['pf_status'] );
                 $message = '';
                 if ( $status === 'success' ) {
-                    $message = __( 'Mesajul tău a fost trimis cu succes!', 'professional-forms' );
+                    $message = __( 'Your message has been sent successfully!', 'professional-forms' );
                     echo '<div class="professional-form-message professional-form-success">' . esc_html( $message ) . '</div>';
                 } elseif ( $status === 'error' ) {
-                    $message = __( 'A apărut o eroare. Te rugăm să încerci din nou.', 'professional-forms' );
+                    $message = __( 'Something went wrong. Please try again.', 'professional-forms' );
                     echo '<div class="professional-form-message professional-form-error">' . esc_html( $message ) . '</div>';
                 }
             }
@@ -176,7 +176,7 @@ class Professional_Forms {
                 <?php wp_nonce_field( 'professional_form_action', 'professional_form_nonce' ); ?>
                 <input type="hidden" name="action" value="professional_form_submit">
                 <div class="form-group">
-                    <label for="pf-name"><?php _e( 'Nume', 'professional-forms' ); ?></label>
+                    <label for="pf-name"><?php _e( 'Name', 'professional-forms' ); ?></label>
                     <input type="text" id="pf-name" name="pf_name" required>
                 </div>
                 <div class="form-group">
@@ -184,10 +184,10 @@ class Professional_Forms {
                     <input type="email" id="pf-email" name="pf_email" required>
                 </div>
                 <div class="form-group">
-                    <label for="pf-message"><?php _e( 'Mesaj', 'professional-forms' ); ?></label>
+                    <label for="pf-message"><?php _e( 'Message', 'professional-forms' ); ?></label>
                     <textarea id="pf-message" name="pf_message" required></textarea>
                 </div>
-                <button type="submit"><?php _e( 'Trimite', 'professional-forms' ); ?></button>
+                <button type="submit"><?php _e( 'Send', 'professional-forms' ); ?></button>
             </form>
         </div>
         <?php
@@ -195,27 +195,27 @@ class Professional_Forms {
     }
 
     /**
-     * Procesează trimiterea formularului.
+     * Processes the form submission.
      */
     public function handle_submission() {
-        // Verifică nonce-ul.
+        // Verify the nonce.
         if ( ! isset( $_POST['professional_form_nonce'] ) || ! wp_verify_nonce( $_POST['professional_form_nonce'], 'professional_form_action' ) ) {
-            wp_die( __( 'Verificarea de securitate a eșuat.', 'professional-forms' ) );
+            wp_die( __( 'Security check failed.', 'professional-forms' ) );
         }
 
-        // Preia și sanitizează datele.
+        // Retrieve and sanitize the submitted data.
         $name    = isset( $_POST['pf_name'] ) ? sanitize_text_field( $_POST['pf_name'] ) : '';
         $email   = isset( $_POST['pf_email'] ) ? sanitize_email( $_POST['pf_email'] ) : '';
         $message = isset( $_POST['pf_message'] ) ? sanitize_textarea_field( $_POST['pf_message'] ) : '';
 
-        // Validare simplă.
+        // Basic validation.
         if ( empty( $name ) || empty( $email ) || empty( $message ) || ! is_email( $email ) ) {
             $redirect = add_query_arg( 'pf_status', 'error', wp_get_referer() );
             wp_safe_redirect( $redirect );
             exit;
         }
 
-        // Salvează în baza de date.
+        // Save to the database.
         global $wpdb;
         $table_name = $wpdb->prefix . 'professional_forms_submissions';
         $inserted = $wpdb->insert(
@@ -234,11 +234,11 @@ class Professional_Forms {
             exit;
         }
 
-        // Trimite notificare pe email.
+        // Send the email notification.
         $to = get_option( 'professional_forms_email', get_option( 'admin_email' ) );
-        $subject = sprintf( __( 'Mesaj nou de la %s', 'professional-forms' ), $name );
+        $subject = sprintf( __( 'New message from %s', 'professional-forms' ), $name );
         $body = sprintf(
-            __( "Nume: %s\nEmail: %s\nMesaj:\n%s", 'professional-forms' ),
+            __( "Name: %s\nEmail: %s\nMessage:\n%s", 'professional-forms' ),
             $name,
             $email,
             $message
@@ -246,19 +246,19 @@ class Professional_Forms {
         $headers = array( 'Content-Type: text/plain; charset=UTF-8' );
         wp_mail( $to, $subject, $body, $headers );
 
-        // Redirecționează cu succes.
+        // Redirect with success status.
         $redirect = add_query_arg( 'pf_status', 'success', wp_get_referer() );
         wp_safe_redirect( $redirect );
         exit;
     }
 
     /**
-     * Adaugă paginile de administrare.
+     * Adds the admin pages.
      */
     public function admin_menu() {
         add_menu_page(
-            __( 'Formulare', 'professional-forms' ),
-            __( 'Formulare', 'professional-forms' ),
+            __( 'Forms', 'professional-forms' ),
+            __( 'Forms', 'professional-forms' ),
             'manage_options',
             'professional-forms',
             array( $this, 'submissions_page' ),
@@ -267,16 +267,24 @@ class Professional_Forms {
         );
         add_submenu_page(
             'professional-forms',
-            __( 'Trimiteri', 'professional-forms' ),
-            __( 'Trimiteri', 'professional-forms' ),
+            __( 'Submissions', 'professional-forms' ),
+            __( 'Submissions', 'professional-forms' ),
             'manage_options',
             'professional-forms',
             array( $this, 'submissions_page' )
         );
         add_submenu_page(
             'professional-forms',
-            __( 'Setări', 'professional-forms' ),
-            __( 'Setări', 'professional-forms' ),
+            __( 'Instructions', 'professional-forms' ),
+            __( 'Instructions', 'professional-forms' ),
+            'manage_options',
+            'professional-forms-instructions',
+            array( $this, 'instructions_page' )
+        );
+        add_submenu_page(
+            'professional-forms',
+            __( 'Settings', 'professional-forms' ),
+            __( 'Settings', 'professional-forms' ),
             'manage_options',
             'professional-forms-settings',
             array( $this, 'settings_page' )
@@ -284,13 +292,13 @@ class Professional_Forms {
     }
 
     /**
-     * Pagina cu lista trimiterilor.
+     * Submissions list page.
      */
     public function submissions_page() {
         global $wpdb;
         $table_name = $wpdb->prefix . 'professional_forms_submissions';
 
-        // Paginare simplă.
+        // Simple pagination.
         $per_page = 20;
         $current_page = isset( $_GET['paged'] ) ? max( 1, intval( $_GET['paged'] ) ) : 1;
         $offset = ( $current_page - 1 ) * $per_page;
@@ -307,15 +315,15 @@ class Professional_Forms {
         );
         ?>
         <div class="wrap">
-            <h1><?php _e( 'Trimiteri formulare', 'professional-forms' ); ?></h1>
+            <h1><?php _e( 'Form Submissions', 'professional-forms' ); ?></h1>
             <table class="wp-list-table widefat fixed striped">
                 <thead>
                     <tr>
                         <th><?php _e( 'ID', 'professional-forms' ); ?></th>
-                        <th><?php _e( 'Nume', 'professional-forms' ); ?></th>
+                        <th><?php _e( 'Name', 'professional-forms' ); ?></th>
                         <th><?php _e( 'Email', 'professional-forms' ); ?></th>
-                        <th><?php _e( 'Mesaj', 'professional-forms' ); ?></th>
-                        <th><?php _e( 'Data', 'professional-forms' ); ?></th>
+                        <th><?php _e( 'Message', 'professional-forms' ); ?></th>
+                        <th><?php _e( 'Date', 'professional-forms' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -331,7 +339,7 @@ class Professional_Forms {
                         <?php endforeach; ?>
                     <?php else : ?>
                         <tr>
-                            <td colspan="5"><?php _e( 'Nu există trimiteri.', 'professional-forms' ); ?></td>
+                            <td colspan="5"><?php _e( 'No submissions yet.', 'professional-forms' ); ?></td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
@@ -358,12 +366,51 @@ class Professional_Forms {
     }
 
     /**
-     * Pagina de setări.
+     * Instructions page – explains how to place the form on a page.
+     */
+    public function instructions_page() {
+        ?>
+        <div class="wrap">
+            <h1><?php _e( 'How to Add the Form to a Page', 'professional-forms' ); ?></h1>
+
+            <div class="card" style="max-width: 800px; padding: 20px; margin-top: 20px;">
+                <h2><?php _e( 'Step-by-step guide', 'professional-forms' ); ?></h2>
+                <ol style="font-size: 14px; line-height: 1.8;">
+                    <li><?php _e( 'Go to <strong>Pages &rarr; Add New</strong> (or open an existing page you want to edit).', 'professional-forms' ); ?></li>
+                    <li><?php _e( 'Give the page a title, e.g. <strong>Contact</strong>.', 'professional-forms' ); ?></li>
+                    <li><?php _e( 'In the content area, add a <strong>Shortcode</strong> block (or simply type the shortcode into a paragraph if you use the Classic Editor).', 'professional-forms' ); ?></li>
+                    <li><?php _e( 'Paste the following shortcode into the block:', 'professional-forms' ); ?>
+                        <div style="margin: 10px 0;">
+                            <code style="background: #f0f0f1; padding: 8px 14px; border-radius: 4px; font-size: 15px; display: inline-block;">[professional_form]</code>
+                        </div>
+                    </li>
+                    <li><?php _e( 'Click <strong>Publish</strong> (or <strong>Update</strong>).', 'professional-forms' ); ?></li>
+                    <li><?php _e( 'Open the page on your website — the contact form will appear there, fully styled and ready to use.', 'professional-forms' ); ?></li>
+                </ol>
+
+                <h2><?php _e( 'What happens after a visitor submits the form?', 'professional-forms' ); ?></h2>
+                <ul style="font-size: 14px; line-height: 1.8;">
+                    <li><?php _e( 'The submission is saved and appears under <strong>Forms &rarr; Submissions</strong>.', 'professional-forms' ); ?></li>
+                    <li><?php _e( 'An email notification is sent to the address configured under <strong>Forms &rarr; Settings</strong>.', 'professional-forms' ); ?></li>
+                </ul>
+
+                <h2><?php _e( 'Tips', 'professional-forms' ); ?></h2>
+                <ul style="font-size: 14px; line-height: 1.8;">
+                    <li><?php _e( 'You can add the shortcode to as many pages as you like — for example, a footer widget or a sidebar text widget also supports shortcodes.', 'professional-forms' ); ?></li>
+                    <li><?php _e( 'Set the notification email under <strong>Forms &rarr; Settings</strong> if you want submissions sent somewhere other than the site admin email.', 'professional-forms' ); ?></li>
+                </ul>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Settings page.
      */
     public function settings_page() {
         ?>
         <div class="wrap">
-            <h1><?php _e( 'Setări Professional Forms', 'professional-forms' ); ?></h1>
+            <h1><?php _e( 'Professional Forms Settings', 'professional-forms' ); ?></h1>
             <form method="post" action="options.php">
                 <?php
                 settings_fields( 'professional_forms_settings' );
@@ -372,13 +419,13 @@ class Professional_Forms {
                 <table class="form-table">
                     <tr>
                         <th scope="row">
-                            <label for="professional_forms_email"><?php _e( 'Email destinatar', 'professional-forms' ); ?></label>
+                            <label for="professional_forms_email"><?php _e( 'Recipient email', 'professional-forms' ); ?></label>
                         </th>
                         <td>
                             <input type="email" id="professional_forms_email" name="professional_forms_email"
                                    value="<?php echo esc_attr( get_option( 'professional_forms_email', get_option( 'admin_email' ) ) ); ?>"
                                    class="regular-text">
-                            <p class="description"><?php _e( 'Adresa de email la care se trimit notificările pentru formularele completate.', 'professional-forms' ); ?></p>
+                            <p class="description"><?php _e( 'The email address that receives notifications for new form submissions.', 'professional-forms' ); ?></p>
                         </td>
                     </tr>
                 </table>
@@ -389,12 +436,12 @@ class Professional_Forms {
     }
 
     /**
-     * Înregistrează setarea pentru email.
+     * Registers the email setting.
      */
     public function register_settings() {
         register_setting( 'professional_forms_settings', 'professional_forms_email', 'sanitize_email' );
     }
 }
 
-// Inițializează plugin-ul.
+// Initialize the plugin.
 new Professional_Forms();
