@@ -1,8 +1,8 @@
 <div align="center">
 
-# 📬 Professional Contact Forms
+# 📬 FormLite
 
-**Un plugin WordPress curat, sigur și ușor de folosit pentru formulare de contact — cu stocare în baza de date și notificări automate pe email.**
+**A lightweight WordPress contact form plugin — database storage and automatic email notifications.**
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/Byot3711/-Forms)
 [![License: GPL v2+](https://img.shields.io/badge/license-GPL--2.0%2B-green.svg)](LICENSE)
@@ -13,79 +13,78 @@
 
 ---
 
-## ✨ Despre plugin
+## About
 
-**Professional Contact Forms** adaugă un formular de contact modern pe orice pagină sau articol, printr-un simplu shortcode. Toate trimiterile sunt salvate în baza de date WordPress și pot fi vizualizate direct din panoul de administrare, iar administratorul primește o notificare pe email la fiecare mesaj nou.
+**FormLite** adds a contact form anywhere on your site through a simple shortcode. Submissions are saved to the WordPress database and can be viewed from the admin panel, and the site admin gets an email notification for every new message.
 
-Fără dependențe externe, fără javascript inutil — un singur fișier, cod curat, respectă standardele WordPress.
+No external dependencies, no unnecessary javascript — a single file, clean code, follows WordPress standards.
 
-## 🚀 Funcționalități
+## Features
 
-| | |
-|---|---|
-| 🎨 | Formular stilizat, responsive, gata de utilizare — fără CSS suplimentar |
-| 🔒 | Protecție prin `nonce` împotriva atacurilor CSRF |
-| 🧹 | Sanitizare completă a datelor (`name`, `email`, `message`) |
-| 💾 | Stocare trimiteri într-un tabel dedicat în baza de date |
-| 📧 | Notificare automată pe email la fiecare trimitere nouă |
-| 🗂️ | Panou de administrare cu listă paginată a mesajelor primite |
-| ⚙️ | Pagină de setări — email destinatar configurabil |
-| 🧩 | Un singur shortcode, integrare instant: `[professional_form]` |
+- Ready-to-use, responsive styled form — no extra CSS needed
+- CSRF protection via WordPress nonces
+- Full input sanitization (`name`, `email`, `message`)
+- Submissions stored in a dedicated database table
+- Automatic email notification on every new submission
+- Admin dashboard with a paginated list of submissions
+- Built-in instructions page showing how to add the form to a page
+- Configurable recipient email
+- One shortcode, instant integration: `[formlite]`
 
-## 📦 Instalare
+## Installation
 
-1. Descarcă sau clonează acest repository:
+1. Download or clone this repository:
    ```bash
-   git clone https://github.com/Byot3711/-Forms.git professional-forms
+   git clone https://github.com/Byot3711/-Forms.git formlite
    ```
-2. Copiază directorul `professional-forms` în:
+2. Copy the `formlite` directory into:
    ```
    wp-content/plugins/
    ```
-3. Din **WP Admin → Plugins**, activează **Professional Contact Forms**.
-4. Gata! La activare, plugin-ul creează automat tabelul necesar în baza de date.
+3. From **WP Admin → Plugins**, activate **FormLite**.
+4. Done! On activation, the plugin automatically creates the required database table.
 
-## 🖊️ Utilizare
+## Usage
 
-Adaugă shortcode-ul oriunde într-o pagină sau articol:
+Add the shortcode anywhere in a page or post:
 
 ```
-[professional_form]
+[formlite]
 ```
 
-Formularul va apărea instant, complet stilizat, gata să primească mesaje.
+The form will appear instantly, fully styled and ready to receive messages.
 
-## ⚙️ Setări
+## Settings
 
-Din meniul **Formulare → Setări** din WP Admin poți configura adresa de email la care se trimit notificările (implicit, emailul administratorului site-ului).
+From the **FormLite → Settings** menu in WP Admin, you can configure the email address that receives notifications (defaults to the site admin email).
 
-## 🗃️ Trimiteri
+## Submissions
 
-Toate mesajele primite pot fi vizualizate din meniul **Formulare → Trimiteri**, cu paginare automată.
+All received messages can be viewed from **FormLite → Submissions**, with automatic pagination.
 
-## 🛠️ Cerințe
+## Requirements
 
 - WordPress 5.0+
 - PHP 7.4+
 - MySQL / MariaDB (standard WordPress)
 
-## 📁 Structură
+## Structure
 
 ```
-professional-forms/
-└── professional-forms.php   # tot plugin-ul, într-un singur fișier
+formlite/
+└── formlite.php   # the entire plugin, in a single file
 ```
 
-## 📄 Licență
+## License
 
-Distribuit sub licența **GPL-2.0+**. Vezi fișierul [LICENSE](LICENSE) pentru detalii.
+Distributed under the **GPL-2.0+** license. See [LICENSE](LICENSE) for details.
 
-## 👤 Autor
+## Author
 
-Dezvoltat de **[Byot](https://github.com/Byot3711)**.
+Built by **[Byot](https://github.com/Byot3711)**.
 
 ---
 
 <div align="center">
-Dacă îți este util, lasă un ⭐ pe repository!
+If this is useful to you, leave a ⭐ on the repository!
 </div>

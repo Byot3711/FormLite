@@ -1,13 +1,13 @@
 <?php
 /**
- * Plugin Name: Professional Contact Forms
+ * Plugin Name: FormLite
  * Plugin URI:  https://github.com/Byot3711/-Forms
- * Description: A clean, professional WordPress contact form plugin with database storage, email notifications, and an admin dashboard.
+ * Description: A lightweight WordPress contact form plugin with database storage, email notifications, and an admin dashboard.
  * Version:     1.0.0
  * Author:      Byot
  * Author URI:  https://github.com/Byot3711
  * License:     GPL-2.0+
- * Text Domain: professional-forms
+ * Text Domain: formlite
  */
 
 // If this file is called directly, abort.
@@ -15,24 +15,24 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'PROFESSIONAL_FORMS_VERSION', '1.0.0' );
+define( 'FORMLITE_VERSION', '1.0.0' );
 
 /**
  * Main plugin class.
  */
-class Professional_Forms {
+class FormLite {
 
     /**
      * Constructor.
      */
     public function __construct() {
         register_activation_hook( __FILE__, array( $this, 'activate' ) );
-        register_uninstall_hook( __FILE__, array( 'Professional_Forms', 'uninstall' ) );
+        register_uninstall_hook( __FILE__, array( 'FormLite', 'uninstall' ) );
 
-        add_shortcode( 'professional_form', array( $this, 'form_shortcode' ) );
+        add_shortcode( 'formlite', array( $this, 'form_shortcode' ) );
 
-        add_action( 'admin_post_nopriv_professional_form_submit', array( $this, 'handle_submission' ) );
-        add_action( 'admin_post_professional_form_submit', array( $this, 'handle_submission' ) );
+        add_action( 'admin_post_nopriv_formlite_submit', array( $this, 'handle_submission' ) );
+        add_action( 'admin_post_formlite_submit', array( $this, 'handle_submission' ) );
 
         add_action( 'admin_menu', array( $this, 'admin_menu' ) );
         add_action( 'admin_init', array( $this, 'register_settings' ) );
@@ -46,7 +46,7 @@ class Professional_Forms {
     public function activate() {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'professional_forms_submissions';
+        $table_name = $wpdb->prefix . 'formlite_submissions';
         $charset_collate = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE $table_name (
@@ -62,8 +62,8 @@ class Professional_Forms {
         dbDelta( $sql );
 
         // Default the recipient email to the site admin email, if not already set.
-        if ( ! get_option( 'professional_forms_email' ) ) {
-            update_option( 'professional_forms_email', get_option( 'admin_email' ) );
+        if ( ! get_option( 'formlite_email' ) ) {
+            update_option( 'formlite_email', get_option( 'admin_email' ) );
         }
     }
 
@@ -72,9 +72,9 @@ class Professional_Forms {
      */
     public static function uninstall() {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'professional_forms_submissions';
+        $table_name = $wpdb->prefix . 'formlite_submissions';
         $wpdb->query( "DROP TABLE IF EXISTS $table_name" );
-        delete_option( 'professional_forms_email' );
+        delete_option( 'formlite_email' );
     }
 
     /**
@@ -83,29 +83,29 @@ class Professional_Forms {
     public function enqueue_scripts() {
         // Inline CSS to keep the plugin self-contained in a single file.
         $custom_css = "
-            .professional-form-wrapper {
+            .formlite-wrapper {
                 max-width: 600px;
                 margin: 20px auto;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             }
-            .professional-form-wrapper form {
+            .formlite-wrapper form {
                 background: #f9f9f9;
                 padding: 30px;
                 border-radius: 8px;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             }
-            .professional-form-wrapper .form-group {
+            .formlite-wrapper .form-group {
                 margin-bottom: 20px;
             }
-            .professional-form-wrapper label {
+            .formlite-wrapper label {
                 display: block;
                 margin-bottom: 5px;
                 font-weight: 600;
                 color: #333;
             }
-            .professional-form-wrapper input[type='text'],
-            .professional-form-wrapper input[type='email'],
-            .professional-form-wrapper textarea {
+            .formlite-wrapper input[type='text'],
+            .formlite-wrapper input[type='email'],
+            .formlite-wrapper textarea {
                 width: 100%;
                 padding: 10px;
                 border: 1px solid #ddd;
@@ -113,11 +113,11 @@ class Professional_Forms {
                 font-size: 16px;
                 box-sizing: border-box;
             }
-            .professional-form-wrapper textarea {
+            .formlite-wrapper textarea {
                 height: 150px;
                 resize: vertical;
             }
-            .professional-form-wrapper button[type='submit'] {
+            .formlite-wrapper button[type='submit'] {
                 background: #0073aa;
                 color: white;
                 border: none;
@@ -127,67 +127,67 @@ class Professional_Forms {
                 cursor: pointer;
                 transition: background 0.3s;
             }
-            .professional-form-wrapper button[type='submit']:hover {
+            .formlite-wrapper button[type='submit']:hover {
                 background: #005a87;
             }
-            .professional-form-message {
+            .formlite-message {
                 margin-top: 20px;
                 padding: 15px;
                 border-radius: 4px;
             }
-            .professional-form-success {
+            .formlite-success {
                 background: #d4edda;
                 color: #155724;
                 border: 1px solid #c3e6cb;
             }
-            .professional-form-error {
+            .formlite-error {
                 background: #f8d7da;
                 color: #721c24;
                 border: 1px solid #f5c6cb;
             }
         ";
-        wp_register_style( 'professional-forms-style', false );
-        wp_enqueue_style( 'professional-forms-style' );
-        wp_add_inline_style( 'professional-forms-style', $custom_css );
+        wp_register_style( 'formlite-style', false );
+        wp_enqueue_style( 'formlite-style' );
+        wp_add_inline_style( 'formlite-style', $custom_css );
     }
 
     /**
-     * Shortcode [professional_form] – renders the contact form.
+     * Shortcode [formlite] – renders the contact form.
      */
     public function form_shortcode() {
         ob_start();
         ?>
-        <div class="professional-form-wrapper">
+        <div class="formlite-wrapper">
             <?php
             // Show success/error messages after submission.
-            if ( isset( $_GET['pf_status'] ) ) {
-                $status = sanitize_text_field( $_GET['pf_status'] );
+            if ( isset( $_GET['formlite_status'] ) ) {
+                $status = sanitize_text_field( $_GET['formlite_status'] );
                 $message = '';
                 if ( $status === 'success' ) {
-                    $message = __( 'Your message has been sent successfully!', 'professional-forms' );
-                    echo '<div class="professional-form-message professional-form-success">' . esc_html( $message ) . '</div>';
+                    $message = __( 'Your message has been sent successfully!', 'formlite' );
+                    echo '<div class="formlite-message formlite-success">' . esc_html( $message ) . '</div>';
                 } elseif ( $status === 'error' ) {
-                    $message = __( 'Something went wrong. Please try again.', 'professional-forms' );
-                    echo '<div class="professional-form-message professional-form-error">' . esc_html( $message ) . '</div>';
+                    $message = __( 'Something went wrong. Please try again.', 'formlite' );
+                    echo '<div class="formlite-message formlite-error">' . esc_html( $message ) . '</div>';
                 }
             }
             ?>
             <form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
-                <?php wp_nonce_field( 'professional_form_action', 'professional_form_nonce' ); ?>
-                <input type="hidden" name="action" value="professional_form_submit">
+                <?php wp_nonce_field( 'formlite_action', 'formlite_nonce' ); ?>
+                <input type="hidden" name="action" value="formlite_submit">
                 <div class="form-group">
-                    <label for="pf-name"><?php _e( 'Name', 'professional-forms' ); ?></label>
-                    <input type="text" id="pf-name" name="pf_name" required>
+                    <label for="formlite-name"><?php _e( 'Name', 'formlite' ); ?></label>
+                    <input type="text" id="formlite-name" name="formlite_name" required>
                 </div>
                 <div class="form-group">
-                    <label for="pf-email"><?php _e( 'Email', 'professional-forms' ); ?></label>
-                    <input type="email" id="pf-email" name="pf_email" required>
+                    <label for="formlite-email"><?php _e( 'Email', 'formlite' ); ?></label>
+                    <input type="email" id="formlite-email" name="formlite_email" required>
                 </div>
                 <div class="form-group">
-                    <label for="pf-message"><?php _e( 'Message', 'professional-forms' ); ?></label>
-                    <textarea id="pf-message" name="pf_message" required></textarea>
+                    <label for="formlite-message"><?php _e( 'Message', 'formlite' ); ?></label>
+                    <textarea id="formlite-message" name="formlite_message" required></textarea>
                 </div>
-                <button type="submit"><?php _e( 'Send', 'professional-forms' ); ?></button>
+                <button type="submit"><?php _e( 'Send', 'formlite' ); ?></button>
             </form>
         </div>
         <?php
@@ -199,25 +199,25 @@ class Professional_Forms {
      */
     public function handle_submission() {
         // Verify the nonce.
-        if ( ! isset( $_POST['professional_form_nonce'] ) || ! wp_verify_nonce( $_POST['professional_form_nonce'], 'professional_form_action' ) ) {
-            wp_die( __( 'Security check failed.', 'professional-forms' ) );
+        if ( ! isset( $_POST['formlite_nonce'] ) || ! wp_verify_nonce( $_POST['formlite_nonce'], 'formlite_action' ) ) {
+            wp_die( __( 'Security check failed.', 'formlite' ) );
         }
 
         // Retrieve and sanitize the submitted data.
-        $name    = isset( $_POST['pf_name'] ) ? sanitize_text_field( $_POST['pf_name'] ) : '';
-        $email   = isset( $_POST['pf_email'] ) ? sanitize_email( $_POST['pf_email'] ) : '';
-        $message = isset( $_POST['pf_message'] ) ? sanitize_textarea_field( $_POST['pf_message'] ) : '';
+        $name    = isset( $_POST['formlite_name'] ) ? sanitize_text_field( $_POST['formlite_name'] ) : '';
+        $email   = isset( $_POST['formlite_email'] ) ? sanitize_email( $_POST['formlite_email'] ) : '';
+        $message = isset( $_POST['formlite_message'] ) ? sanitize_textarea_field( $_POST['formlite_message'] ) : '';
 
         // Basic validation.
         if ( empty( $name ) || empty( $email ) || empty( $message ) || ! is_email( $email ) ) {
-            $redirect = add_query_arg( 'pf_status', 'error', wp_get_referer() );
+            $redirect = add_query_arg( 'formlite_status', 'error', wp_get_referer() );
             wp_safe_redirect( $redirect );
             exit;
         }
 
         // Save to the database.
         global $wpdb;
-        $table_name = $wpdb->prefix . 'professional_forms_submissions';
+        $table_name = $wpdb->prefix . 'formlite_submissions';
         $inserted = $wpdb->insert(
             $table_name,
             array(
@@ -229,16 +229,16 @@ class Professional_Forms {
         );
 
         if ( false === $inserted ) {
-            $redirect = add_query_arg( 'pf_status', 'error', wp_get_referer() );
+            $redirect = add_query_arg( 'formlite_status', 'error', wp_get_referer() );
             wp_safe_redirect( $redirect );
             exit;
         }
 
         // Send the email notification.
-        $to = get_option( 'professional_forms_email', get_option( 'admin_email' ) );
-        $subject = sprintf( __( 'New message from %s', 'professional-forms' ), $name );
+        $to = get_option( 'formlite_email', get_option( 'admin_email' ) );
+        $subject = sprintf( __( 'New message from %s', 'formlite' ), $name );
         $body = sprintf(
-            __( "Name: %s\nEmail: %s\nMessage:\n%s", 'professional-forms' ),
+            __( "Name: %s\nEmail: %s\nMessage:\n%s", 'formlite' ),
             $name,
             $email,
             $message
@@ -247,7 +247,7 @@ class Professional_Forms {
         wp_mail( $to, $subject, $body, $headers );
 
         // Redirect with success status.
-        $redirect = add_query_arg( 'pf_status', 'success', wp_get_referer() );
+        $redirect = add_query_arg( 'formlite_status', 'success', wp_get_referer() );
         wp_safe_redirect( $redirect );
         exit;
     }
@@ -257,36 +257,36 @@ class Professional_Forms {
      */
     public function admin_menu() {
         add_menu_page(
-            __( 'Forms', 'professional-forms' ),
-            __( 'Forms', 'professional-forms' ),
+            __( 'FormLite', 'formlite' ),
+            __( 'FormLite', 'formlite' ),
             'manage_options',
-            'professional-forms',
+            'formlite',
             array( $this, 'submissions_page' ),
             'dashicons-email-alt',
             30
         );
         add_submenu_page(
-            'professional-forms',
-            __( 'Submissions', 'professional-forms' ),
-            __( 'Submissions', 'professional-forms' ),
+            'formlite',
+            __( 'Submissions', 'formlite' ),
+            __( 'Submissions', 'formlite' ),
             'manage_options',
-            'professional-forms',
+            'formlite',
             array( $this, 'submissions_page' )
         );
         add_submenu_page(
-            'professional-forms',
-            __( 'Instructions', 'professional-forms' ),
-            __( 'Instructions', 'professional-forms' ),
+            'formlite',
+            __( 'Instructions', 'formlite' ),
+            __( 'Instructions', 'formlite' ),
             'manage_options',
-            'professional-forms-instructions',
+            'formlite-instructions',
             array( $this, 'instructions_page' )
         );
         add_submenu_page(
-            'professional-forms',
-            __( 'Settings', 'professional-forms' ),
-            __( 'Settings', 'professional-forms' ),
+            'formlite',
+            __( 'Settings', 'formlite' ),
+            __( 'Settings', 'formlite' ),
             'manage_options',
-            'professional-forms-settings',
+            'formlite-settings',
             array( $this, 'settings_page' )
         );
     }
@@ -296,7 +296,7 @@ class Professional_Forms {
      */
     public function submissions_page() {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'professional_forms_submissions';
+        $table_name = $wpdb->prefix . 'formlite_submissions';
 
         // Simple pagination.
         $per_page = 20;
@@ -315,15 +315,15 @@ class Professional_Forms {
         );
         ?>
         <div class="wrap">
-            <h1><?php _e( 'Form Submissions', 'professional-forms' ); ?></h1>
+            <h1><?php _e( 'Form Submissions', 'formlite' ); ?></h1>
             <table class="wp-list-table widefat fixed striped">
                 <thead>
                     <tr>
-                        <th><?php _e( 'ID', 'professional-forms' ); ?></th>
-                        <th><?php _e( 'Name', 'professional-forms' ); ?></th>
-                        <th><?php _e( 'Email', 'professional-forms' ); ?></th>
-                        <th><?php _e( 'Message', 'professional-forms' ); ?></th>
-                        <th><?php _e( 'Date', 'professional-forms' ); ?></th>
+                        <th><?php _e( 'ID', 'formlite' ); ?></th>
+                        <th><?php _e( 'Name', 'formlite' ); ?></th>
+                        <th><?php _e( 'Email', 'formlite' ); ?></th>
+                        <th><?php _e( 'Message', 'formlite' ); ?></th>
+                        <th><?php _e( 'Date', 'formlite' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -339,7 +339,7 @@ class Professional_Forms {
                         <?php endforeach; ?>
                     <?php else : ?>
                         <tr>
-                            <td colspan="5"><?php _e( 'No submissions yet.', 'professional-forms' ); ?></td>
+                            <td colspan="5"><?php _e( 'No submissions yet.', 'formlite' ); ?></td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
@@ -371,33 +371,33 @@ class Professional_Forms {
     public function instructions_page() {
         ?>
         <div class="wrap">
-            <h1><?php _e( 'How to Add the Form to a Page', 'professional-forms' ); ?></h1>
+            <h1><?php _e( 'How to Add the Form to a Page', 'formlite' ); ?></h1>
 
             <div class="card" style="max-width: 800px; padding: 20px; margin-top: 20px;">
-                <h2><?php _e( 'Step-by-step guide', 'professional-forms' ); ?></h2>
+                <h2><?php _e( 'Step-by-step guide', 'formlite' ); ?></h2>
                 <ol style="font-size: 14px; line-height: 1.8;">
-                    <li><?php _e( 'Go to <strong>Pages &rarr; Add New</strong> (or open an existing page you want to edit).', 'professional-forms' ); ?></li>
-                    <li><?php _e( 'Give the page a title, e.g. <strong>Contact</strong>.', 'professional-forms' ); ?></li>
-                    <li><?php _e( 'In the content area, add a <strong>Shortcode</strong> block (or simply type the shortcode into a paragraph if you use the Classic Editor).', 'professional-forms' ); ?></li>
-                    <li><?php _e( 'Paste the following shortcode into the block:', 'professional-forms' ); ?>
+                    <li><?php _e( 'Go to <strong>Pages &rarr; Add New</strong> (or open an existing page you want to edit).', 'formlite' ); ?></li>
+                    <li><?php _e( 'Give the page a title, e.g. <strong>Contact</strong>.', 'formlite' ); ?></li>
+                    <li><?php _e( 'In the content area, add a <strong>Shortcode</strong> block (or simply type the shortcode into a paragraph if you use the Classic Editor).', 'formlite' ); ?></li>
+                    <li><?php _e( 'Paste the following shortcode into the block:', 'formlite' ); ?>
                         <div style="margin: 10px 0;">
-                            <code style="background: #f0f0f1; padding: 8px 14px; border-radius: 4px; font-size: 15px; display: inline-block;">[professional_form]</code>
+                            <code style="background: #f0f0f1; padding: 8px 14px; border-radius: 4px; font-size: 15px; display: inline-block;">[formlite]</code>
                         </div>
                     </li>
-                    <li><?php _e( 'Click <strong>Publish</strong> (or <strong>Update</strong>).', 'professional-forms' ); ?></li>
-                    <li><?php _e( 'Open the page on your website — the contact form will appear there, fully styled and ready to use.', 'professional-forms' ); ?></li>
+                    <li><?php _e( 'Click <strong>Publish</strong> (or <strong>Update</strong>).', 'formlite' ); ?></li>
+                    <li><?php _e( 'Open the page on your website — the contact form will appear there, fully styled and ready to use.', 'formlite' ); ?></li>
                 </ol>
 
-                <h2><?php _e( 'What happens after a visitor submits the form?', 'professional-forms' ); ?></h2>
+                <h2><?php _e( 'What happens after a visitor submits the form?', 'formlite' ); ?></h2>
                 <ul style="font-size: 14px; line-height: 1.8;">
-                    <li><?php _e( 'The submission is saved and appears under <strong>Forms &rarr; Submissions</strong>.', 'professional-forms' ); ?></li>
-                    <li><?php _e( 'An email notification is sent to the address configured under <strong>Forms &rarr; Settings</strong>.', 'professional-forms' ); ?></li>
+                    <li><?php _e( 'The submission is saved and appears under <strong>FormLite &rarr; Submissions</strong>.', 'formlite' ); ?></li>
+                    <li><?php _e( 'An email notification is sent to the address configured under <strong>FormLite &rarr; Settings</strong>.', 'formlite' ); ?></li>
                 </ul>
 
-                <h2><?php _e( 'Tips', 'professional-forms' ); ?></h2>
+                <h2><?php _e( 'Tips', 'formlite' ); ?></h2>
                 <ul style="font-size: 14px; line-height: 1.8;">
-                    <li><?php _e( 'You can add the shortcode to as many pages as you like — for example, a footer widget or a sidebar text widget also supports shortcodes.', 'professional-forms' ); ?></li>
-                    <li><?php _e( 'Set the notification email under <strong>Forms &rarr; Settings</strong> if you want submissions sent somewhere other than the site admin email.', 'professional-forms' ); ?></li>
+                    <li><?php _e( 'You can add the shortcode to as many pages as you like — for example, a footer widget or a sidebar text widget also supports shortcodes.', 'formlite' ); ?></li>
+                    <li><?php _e( 'Set the notification email under <strong>FormLite &rarr; Settings</strong> if you want submissions sent somewhere other than the site admin email.', 'formlite' ); ?></li>
                 </ul>
             </div>
         </div>
@@ -410,22 +410,22 @@ class Professional_Forms {
     public function settings_page() {
         ?>
         <div class="wrap">
-            <h1><?php _e( 'Professional Forms Settings', 'professional-forms' ); ?></h1>
+            <h1><?php _e( 'FormLite Settings', 'formlite' ); ?></h1>
             <form method="post" action="options.php">
                 <?php
-                settings_fields( 'professional_forms_settings' );
-                do_settings_sections( 'professional_forms_settings' );
+                settings_fields( 'formlite_settings' );
+                do_settings_sections( 'formlite_settings' );
                 ?>
                 <table class="form-table">
                     <tr>
                         <th scope="row">
-                            <label for="professional_forms_email"><?php _e( 'Recipient email', 'professional-forms' ); ?></label>
+                            <label for="formlite_email"><?php _e( 'Recipient email', 'formlite' ); ?></label>
                         </th>
                         <td>
-                            <input type="email" id="professional_forms_email" name="professional_forms_email"
-                                   value="<?php echo esc_attr( get_option( 'professional_forms_email', get_option( 'admin_email' ) ) ); ?>"
+                            <input type="email" id="formlite_email" name="formlite_email"
+                                   value="<?php echo esc_attr( get_option( 'formlite_email', get_option( 'admin_email' ) ) ); ?>"
                                    class="regular-text">
-                            <p class="description"><?php _e( 'The email address that receives notifications for new form submissions.', 'professional-forms' ); ?></p>
+                            <p class="description"><?php _e( 'The email address that receives notifications for new form submissions.', 'formlite' ); ?></p>
                         </td>
                     </tr>
                 </table>
@@ -439,9 +439,9 @@ class Professional_Forms {
      * Registers the email setting.
      */
     public function register_settings() {
-        register_setting( 'professional_forms_settings', 'professional_forms_email', 'sanitize_email' );
+        register_setting( 'formlite_settings', 'formlite_email', 'sanitize_email' );
     }
 }
 
 // Initialize the plugin.
-new Professional_Forms();
+new FormLite();
